@@ -1,4 +1,4 @@
-const {hash} = require("bcryptjs")
+const {hash, compare} = require("bcryptjs")
 const knex = require("../database/knex")
 const AppError = require("../utils/AppError")
 
@@ -44,10 +44,24 @@ class UserController {
     userCheck[0].name = name ?? userCheck[0].name
     userCheck[0].email = email ?? userCheck[0].email
 
+    if(password && !oldpassword) {
+      throw new AppError("Você precisa digitar a senha antiga")
+    }
+
+    if(password && oldpassword) {
+      const checkOldPassword = await compare(oldpassword, userCheck[0].password)
+
+      if(!checkOldPassword){
+        throw new AppError("A senha antiga não confere")
+      }
+
+      userCheck[0].password = await hash(password, 8)
+    }
 
     await knex("users").where({id}).update({
       name: userCheck[0].name,
       email: userCheck[0].email,
+      password: userCheck[0].password,
       updated_at: knex.fn.now()
     })
 
