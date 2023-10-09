@@ -1,9 +1,10 @@
 const {Router} = require("express")
 const MovieTagsController = require("../controller/movieTagsController")
+const ensureAuthenticated = require("../middlewares/ensureAuthenticated")
 const tagsRoutes = Router()
 
 const tagController = new MovieTagsController()
 
-tagsRoutes.get("/:user_id", tagController.index)
+tagsRoutes.get("/", ensureAuthenticated, tagController.index)
 
 module.exports = tagsRoutes
