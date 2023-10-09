@@ -6,9 +6,9 @@ class UserController {
   async create(request, response) {
     const {name, email, password} = request.body
 
-    const checkifUserExists = await knex("users").where({email})
+    const checkifUserExists = await knex("users").where({email}).first()
 
-    if(checkifUserExists.length !== 0) {
+    if(checkifUserExists) {
       throw new AppError("Esté usuário já está cadastrado")
     }    
 
@@ -27,41 +27,37 @@ class UserController {
     const {name, email, password, oldpassword} = request.body
     const {id} = request.params
 
-    const userCheck = await knex("users").where({id})
+    const userCheck = await knex("users").where({id}).first()
 
-    if(userCheck.length === 0) {
+    if(!userCheck) {
       throw new AppError("Usuário não encontrado")
     }
 
-    if(name === userCheck[0].name) {
-      throw new AppError("O nome já está em uso")
-    }
-
-    if(email === userCheck[0].email) {
+    if(email === userCheck.email) {
       throw new AppError("O email já está cadastrado")
     }
 
-    userCheck[0].name = name ?? userCheck[0].name
-    userCheck[0].email = email ?? userCheck[0].email
+    userCheck.name = name ?? userCheck.name
+    userCheck.email = email ?? userCheck.email
 
     if(password && !oldpassword) {
       throw new AppError("Você precisa digitar a senha antiga")
     }
 
     if(password && oldpassword) {
-      const checkOldPassword = await compare(oldpassword, userCheck[0].password)
+      const checkOldPassword = await compare(oldpassword, userCheck.password)
 
       if(!checkOldPassword){
         throw new AppError("A senha antiga não confere")
       }
 
-      userCheck[0].password = await hash(password, 8)
+      userCheck.password = await hash(password, 8)
     }
 
     await knex("users").where({id}).update({
-      name: userCheck[0].name,
-      email: userCheck[0].email,
-      password: userCheck[0].password,
+      name: userCheck.name,
+      email: userCheck.email,
+      password: userCheck.password,
       updated_at: knex.fn.now()
     })
 
