@@ -33,7 +33,9 @@ class UserController {
       throw new AppError("Usuário não encontrado")
     }
 
-    if(email === userCheck.email) {
+    const userWithUpdatedEmail = await knex("users").where({email}).first()
+
+    if(userWithUpdatedEmail && userWithUpdatedEmail.id !== userCheck.id) {
       throw new AppError("O email já está cadastrado")
     }
 
