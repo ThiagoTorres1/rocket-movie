@@ -5,6 +5,6 @@ const tagsRoutes = Router()
 
 const tagController = new MovieTagsController()
 
-tagsRoutes.get("/", ensureAuthenticated, tagController.index)
+tagsRoutes.get("/:note_id", ensureAuthenticated, tagController.show)
 
 module.exports = tagsRoutes
